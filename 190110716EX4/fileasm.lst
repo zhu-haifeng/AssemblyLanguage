@@ -1,0 +1,141 @@
+Microsoft (R) Macro Assembler Version 6.11		    12/15/20 11:29:03
+tempfile.asm						     Page 1 - 1
+
+
+ 0000				DATAS SEGMENT
+ 0000 0A 00				BUFF	DB 10,0,10 DUP(0) ;数据缓存区
+       000A [
+        00
+       ]
+ 000C  000A [				OUTREC 	DB 10 DUP(0) ;存放筛选后结果
+        00
+       ]
+ 0016 0000				TURNS 	DW 0 ;记录字母个数
+ 0018 6F 75 74 70 75 74			FILE_NAME 	DB 'output1.txt',00H ;文件名
+       31 2E 74 78 74 00
+ 0024 0D 0A 45 52 52 4F			CREATE_ERR 	DB 0DH,0AH,'ERROR:Fail to create file!','$' ;创建文件错误
+       52 3A 46 61 69 6C
+       20 74 6F 20 63 72
+       65 61 74 65 20 66
+       69 6C 65 21 24
+ 0041 0D 0A 45 52 52 4F			WRITE_ERR 	DB 0DH,0AH,'ERROR:Fail to write file!','$' ;写文件错误
+       52 3A 46 61 69 6C
+       20 74 6F 20 77 72
+       69 74 65 20 66 69
+       6C 65 21 24
+ 005D 0D 0A 53 55 43 43			SUCCEED		DB 0DH,0AH,'SUCCEED!','$'
+       45 45 44 21 24
+ 0068 0000				WHANDLE DW ? ;文件代号
+ 006A				DATAS ENDS
+ 0000				CODES SEGMENT
+					ASSUME CS:CODES,DS:DATAS
+ 0000				START:
+ 0000  B8 ---- R			MOV AX,DATAS
+ 0003  8E D8				MOV DS,AX
+ 0005  8D 16 0000 R			LEA DX,BUFF
+ 0009  B4 0A				MOV AH,0AH
+ 000B  CD 21				INT 21H		;入读字符串
+ 000D  BB 0002				MOV BX,2
+ 0010  33 F6				XOR SI,SI	;初始化索引
+ 0012  8A 0E 0001 R			MOV CL,BUFF[1];字符数
+ 0016  B5 00				MOV CH,0 
+				;------------------------------------筛选字母
+ 0018				NEXT:
+ 0018  8A 87 0000 R			MOV AL,BUFF[BX];扫描字符串字符
+					
+ 001C  3C 41				CMP AL,41H
+ 001E  72 13				JB SKIP
+ 0020  3C 5A				CMP AL,5AH
+ 0022  76 0A				JBE FOUNED	;大写字母
+					
+ 0024  3C 61				CMP AL,'a'
+ 0026  72 0B				JB SKIP
+ 0028  3C 7A				CMP AL,'z'
+ 002A  76 02				JBE FOUNED	;小写字母
+ 002C  EB 05				JMP SKIP 
+ 002E				FOUNED:
+ 002E  88 84 000C R			MOV OUTREC[SI],AL ;存入是字母的字符到输出数组中
+ 0032  46				INC SI 		
+ 0033				SKIP:
+ 0033  43				INC BX 			;下一个字符
+ 0034  E2 E2				LOOP NEXT
+					
+ 0036  89 36 0016 R			MOV TURNS,SI	;计数
+				;------------------------------创建文件
+ 003A  8D 16 0018 R			LEA DX,FILE_NAME
+ 003E  B4 3C				MOV AH,3CH
+ 0040  B9 0001				MOV CX,1
+ 0043  CD 21				INT 21H		
+					
+ 0045  72 27				JC ERR_C 	;创建失败
+				;-------------------------------写文件
+ 0047  A3 0068 R			MOV WHANDLE,AX ;存文件代号
+ 004A  8B 1E 0068 R			MOV BX,WHANDLE
+ 004E  8B 0E 0016 R			MOV CX,TURNS 	;写入字节数
+ 0052  8D 16 000C R			LEA DX,OUTREC
+ 0056  B4 40				MOV AH,40H	
+ 0058  CD 21				INT 21H
+ 005A  72 1C				JC ERR_W
+				;-------------------------------关闭文件
+ 005C  8B 1E 0068 R			MOV BX,WHANDLE
+ 0060  B4 3E				MOV AH,3EH	
+ 0062  CD 21				INT 21H
+				;-------------------------------操作完成
+ 0064  8D 16 005D R			LEA DX,SUCCEED
+ 0068  B4 09				MOV AH,09H
+ 006A  CD 21				INT 21H 
+ 006C  EB 12				JMP EXIT 
+				;--------------------------------创建报错
+ 006E				ERR_C:			
+ 006E  8D 16 0024 R			LEA DX,CREATE_ERR
+ 0072  B4 09				MOV AH,09H
+ 0074  CD 21				INT 21H
+ 0076  EB 08				JMP EXIT
+				;-------------------------------写文件报错错
+ 0078				ERR_W:			
+ 0078  8D 16 0041 R			LEA DX,WRITE_ERR
+ 007C  B4 09				MOV AH,09H
+ 007E  CD 21				INT 21H 
+ 0080				EXIT:
+ 0080  B4 4C				MOV AH,4CH
+ 0082  CD 21				INT 21H
+ 0084					CODES ENDS
+				END START
+
+
+Microsoft (R) Macro Assembler Version 6.11		    12/15/20 11:29:03
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODES  . . . . . . . . . . . . .	16 Bit	 0084	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 006A	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+BUFF . . . . . . . . . . . . . .	Byte	 0000	  DATAS	
+CREATE_ERR . . . . . . . . . . .	Byte	 0024	  DATAS	
+ERR_C  . . . . . . . . . . . . .	L Near	 006E	  CODES	
+ERR_W  . . . . . . . . . . . . .	L Near	 0078	  CODES	
+EXIT . . . . . . . . . . . . . .	L Near	 0080	  CODES	
+FILE_NAME  . . . . . . . . . . .	Byte	 0018	  DATAS	
+FOUNED . . . . . . . . . . . . .	L Near	 002E	  CODES	
+NEXT . . . . . . . . . . . . . .	L Near	 0018	  CODES	
+OUTREC . . . . . . . . . . . . .	Byte	 000C	  DATAS	
+SKIP . . . . . . . . . . . . . .	L Near	 0033	  CODES	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+SUCCEED  . . . . . . . . . . . .	Byte	 005D	  DATAS	
+TURNS  . . . . . . . . . . . . .	Word	 0016	  DATAS	
+WHANDLE  . . . . . . . . . . . .	Word	 0068	  DATAS	
+WRITE_ERR  . . . . . . . . . . .	Byte	 0041	  DATAS	
+
+	   0 Warnings
+	   0 Errors

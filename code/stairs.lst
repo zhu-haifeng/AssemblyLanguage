@@ -1,0 +1,127 @@
+Microsoft (R) Macro Assembler Version 6.11		    12/15/20 22:07:44
+tempfile.asm						     Page 1 - 1
+
+
+				DRAW MACRO K
+					PUSH CX
+					PUSH DX
+					MOV DX,END_Y
+					MOV CX,END_X	;行列
+					INT 10H
+					INC END_&K
+					POP DX
+					POP CX
+				ENDM
+ 0000				DATAS SEGMENT
+ 0000 000A			    W DW 10             ;台阶长度        
+ 0002 0006			    H DW 6              ;台阶高度
+ 0004 001E			    TURNS DW 30         ;台阶数      调用video中断    等待接收一个字符  写像素中断
+ 0006 0014			    START_X DW 20       ;起始X位置    MOV AH,0          MOV AH,0        MOV AH,0CH
+ 0008 0014			    START_Y DW 20       ;起始Y位置    MOV AL,4          INT 16          INT 10H
+ 000A 0000			    END_X DW 0          ;结束X位置    INT 10H
+ 000C 0000			    END_Y DW 0          ;结束Y位置
+ 000E				DATAS ENDS
+
+
+ 0000				STACKS SEGMENT
+				    ;此处输入堆栈段代码
+ 0000				STACKS ENDS
+
+ 0000				CODES SEGMENT
+				    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+ 0000				START:
+ 0000  B8 ---- R		    MOV AX,DATAS
+ 0003  8E D8			    MOV DS,AX
+					
+ 0005  A1 0006 R			MOV AX,START_X
+ 0008  A3 000A R			MOV END_X,AX
+ 000B  A1 0008 R			MOV AX,START_Y
+ 000E  A3 000C R			MOV END_Y,AX
+					
+ 0011  B4 00				MOV AH,0
+ 0013  B0 04				MOV AL,04		;图形四色
+ 0015  CD 10				INT 10H
+ 0017				INPUT:
+ 0017  32 C0				XOR AL,AL
+ 0019  B4 00				MOV AH,0		;BIOS键盘中断1，读入一个字符
+ 001B  CD 16				INT 16H
+ 001D  8B 0E 0000 R			MOV CX,W
+ 0021  B4 0C				MOV AH,0CH
+ 0023  B0 01				MOV AL,1		;颜色
+					
+ 0025				XDIRECTION:
+					DRAW X
+ 0025  51		     1		PUSH CX
+ 0026  52		     1		PUSH DX
+ 0027  8B 16 000C R	     1		MOV DX,END_Y
+ 002B  8B 0E 000A R	     1		MOV CX,END_X	;行列
+ 002F  CD 10		     1		INT 10H
+ 0031  FF 06 000A R	     1		INC END_X
+ 0035  5A		     1		POP DX
+ 0036  59		     1		POP CX
+ 0037  E2 EC				LOOP XDIRECTION
+					
+ 0039  8B 0E 0002 R			MOV CX,H
+ 003D				YDERECTION:
+					DRAW Y
+ 003D  51		     1		PUSH CX
+ 003E  52		     1		PUSH DX
+ 003F  8B 16 000C R	     1		MOV DX,END_Y
+ 0043  8B 0E 000A R	     1		MOV CX,END_X	;行列
+ 0047  CD 10		     1		INT 10H
+ 0049  FF 06 000C R	     1		INC END_Y
+ 004D  5A		     1		POP DX
+ 004E  59		     1		POP CX
+ 004F  E2 EC				LOOP YDERECTION
+					
+ 0051  FF 0E 0004 R			DEC TURNS
+ 0055  75 C0				JNZ INPUT
+					
+ 0057  B4 4C				MOV AH,4CH
+ 0059  CD 21				INT 21H
+					
+ 005B				CODES ENDS
+				    END START
+
+
+
+Microsoft (R) Macro Assembler Version 6.11		    12/15/20 22:07:44
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+DRAW . . . . . . . . . . . . . .	Proc
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODES  . . . . . . . . . . . . .	16 Bit	 005B	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 000E	  Para	  Private 
+STACKS . . . . . . . . . . . . .	16 Bit	 0000	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+END_X  . . . . . . . . . . . . .	Word	 000A	  DATAS	
+END_Y  . . . . . . . . . . . . .	Word	 000C	  DATAS	
+H  . . . . . . . . . . . . . . .	Word	 0002	  DATAS	
+INPUT  . . . . . . . . . . . . .	L Near	 0017	  CODES	
+START_X  . . . . . . . . . . . .	Word	 0006	  DATAS	
+START_Y  . . . . . . . . . . . .	Word	 0008	  DATAS	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+TURNS  . . . . . . . . . . . . .	Word	 0004	  DATAS	
+W  . . . . . . . . . . . . . . .	Word	 0000	  DATAS	
+XDIRECTION . . . . . . . . . . .	L Near	 0025	  CODES	
+YDERECTION . . . . . . . . . . .	L Near	 003D	  CODES	
+
+	   0 Warnings
+	   0 Errors

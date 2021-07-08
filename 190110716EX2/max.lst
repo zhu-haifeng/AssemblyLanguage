@@ -1,0 +1,105 @@
+Microsoft (R) Macro Assembler Version 6.11		    12/03/20 17:00:30
+tempfile.asm						     Page 1 - 1
+
+
+ 0000				DATAS SEGMENT
+				    ;此处输入数据段代码 
+ 0000 0018 000D FFFB FFF9	    NUMBER DW 24,13,-5,-7,-101,28,46,77,100,3
+       FF9B 001C 002E
+       004D 0064 0003
+ 0014 0000			    RESULT DW ?
+ 0016 000A			    COUNT DW 10
+ 0018 0A			    TEN DB 10 
+ 0019				DATAS ENDS
+
+ 0000				STACKS SEGMENT
+				    ;此处输入堆栈段代码
+ 0000  0064 [			    dw 100 dup(?)
+        0000
+       ]
+ 00C8				STACKS ENDS
+
+ 0000				CODES SEGMENT
+				    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+ 0000				START:
+ 0000  B8 ---- R		    MOV AX,DATAS
+ 0003  8E D8			    MOV DS,AX
+ 0005  B8 ---- R		    MOV AX,STACKS
+ 0008  8E D0			    MOV SS,AX
+ 000A  8B 0E 0016 R		    MOV CX,COUNT
+ 000E  2B DB			    SUB BX,BX
+ 0010  2B D2			    SUB DX,DX		;存最大数
+ 0012				NEXT:
+ 0012  8B 87 0000 R			MOV AX,NUMBER[BX]
+ 0016  85 C0				TEST AX,AX
+ 0018  78 0B				JS	SKIP		;负数
+ 001A  A9 0001				TEST AX,0001H
+ 001D  74 06				JZ SKIP			;奇数直接跳过
+ 001F  3B C2				CMP AX,DX
+ 0021  78 02				JS SKIP			;不大于跳过
+ 0023  8B D0				MOV DX,AX
+ 0025				SKIP:
+ 0025  83 C3 02				ADD BX,2
+ 0028  E2 E8				LOOP NEXT;
+					
+ 002A  89 16 0014 R			MOV RESULT,DX
+ 002E  A1 0014 R			MOV AX,RESULT
+ 0031  2B C9				SUB CX,CX
+					
+ 0033				CLASSIFY:
+ 0033  F6 36 0018 R			DIV TEN
+ 0037  80 C4 30				ADD AH,30H;
+ 003A  50				PUSH AX			;ASCII码压栈
+ 003B  B4 00				MOV AH,0
+ 003D  FE C5				INC CH
+ 003F  22 C0				AND AL,AL
+ 0041  75 F0				JNZ CLASSIFY
+
+					
+ 0043				DISPLAY:
+ 0043  B1 08				MOV CL,8
+ 0045  5A				POP DX
+ 0046  D3 EA				SHR DX,CL
+ 0048  B4 02				MOV AH,02H
+ 004A  CD 21				INT 21H
+ 004C  FE CD				DEC CH
+					;AND CH,CH
+ 004E  75 F3				JNZ DISPLAY
+				    ;此处输入代码段代码
+ 0050  B4 4C			    MOV AH,4CH
+ 0052  CD 21			    INT 21H
+ 0054				CODES ENDS
+				    END START
+
+
+Microsoft (R) Macro Assembler Version 6.11		    12/03/20 17:00:30
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODES  . . . . . . . . . . . . .	16 Bit	 0054	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 0019	  Para	  Private 
+STACKS . . . . . . . . . . . . .	16 Bit	 00C8	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+CLASSIFY . . . . . . . . . . . .	L Near	 0033	  CODES	
+COUNT  . . . . . . . . . . . . .	Word	 0016	  DATAS	
+DISPLAY  . . . . . . . . . . . .	L Near	 0043	  CODES	
+NEXT . . . . . . . . . . . . . .	L Near	 0012	  CODES	
+NUMBER . . . . . . . . . . . . .	Word	 0000	  DATAS	
+RESULT . . . . . . . . . . . . .	Word	 0014	  DATAS	
+SKIP . . . . . . . . . . . . . .	L Near	 0025	  CODES	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+TEN  . . . . . . . . . . . . . .	Byte	 0018	  DATAS	
+
+	   0 Warnings
+	   0 Errors

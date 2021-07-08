@@ -1,0 +1,78 @@
+;----------------------------------换行回车
+CALF MACRO
+	PUSH DX
+	MOV DL,0AH
+	MOV AH,2
+	INT 21H
+	MOV DL,13
+	MOV AH,2
+	INT 21H;
+	POP DX
+ENDM
+
+DATAS SEGMENT
+    NUMBER DB 117,36,77
+    INPUT DW 0
+    K DB 16
+DATAS ENDS
+
+STACKS SEGMENT
+	DW 20 DUP(?)
+STACKS ENDS
+
+CODES SEGMENT
+    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+START:
+    MOV AX,DATAS
+    MOV DS,AX
+    MOV AX,STACKS
+    MOV SS,AX
+    XOR BX,0
+    MOV CX,3H		;外部循环次数
+AGAIN:
+	PUSH CX
+    MOV K,2
+    CALL TRANSTOK	;转化为2进制显示
+    CALF			;换行回车
+    MOV K,16
+    CALL TRANSTOK	;转化16进制显示
+    CALF
+    CALF
+
+    INC BX			;下一个数
+    POP CX
+    LOOP AGAIN
+    
+    MOV AH,4CH
+    INT 21H
+;----------------------------------------------将NUMBER[BX]用k进制显示
+TRANSTOK PROC
+	MOV AL,NUMBER[BX]
+	XOR CX,CX
+CLASSIFY:
+	XOR AH,AH	;置零
+	DIV K
+	ADD AH,30H		;转化ASCII码
+	CMP AH,3AH		;区分字母与数字
+	JL	PUS
+	ADD AH,7H
+PUS:
+	PUSH AX			;压栈
+	INC CH			;记录字符数
+	
+	CMP AL,0		;商为零则结束
+	JNZ CLASSIFY
+DISPLAY:
+	MOV CL,8
+	POP DX
+	SHR DX,CL		;字符送DL
+	MOV AH,02H
+	INT 21H
+	DEC CH
+	JNZ DISPLAY
+	
+	RET
+TRANSTOK ENDP
+CODES ENDS
+    END START
+

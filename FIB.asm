@@ -1,0 +1,138 @@
+;-------------------------------------------输入一个数到INPUT
+INPUTNUM MACRO
+	LEA DX,BUFF
+	MOV AH,0AH
+	INT 21H
+	XOR BX,BX
+	XOR CX,CX
+	XOR DX,DX
+	MOV CL,CNT
+ADDTOSUM:
+	SHL DX,1	;原数*2
+	MOV AX,DX	;AX=原数*2
+	SHL DX,1	
+	SHL DX,1	;DX=原数*8
+	ADD DX,AX	;DX=原数*10
+	XOR AX,AX
+	MOV AL,NUMSTR[BX]
+	SUB AL,30H
+	ADD DX,AX
+	INC BX
+	LOOP ADDTOSUM
+	MOV INPUT,DL
+
+	
+ENDM
+;-------------------------------------------换行回车
+CALF MACRO
+	PUSH DX
+	MOV DL,0AH
+	MOV AH,2
+	INT 21H
+	MOV DL,13
+	MOV AH,2
+	INT 21H;
+	POP DX
+ENDM
+;-----------------------------------------------
+DATAS SEGMENT
+    FIB DW 22 DUP(?)
+  	I DB ?
+    K DW 10
+    INPUT DB ? ;
+    BUFF DB 5;
+    CNT DB ?;
+    NUMSTR DB 5 DUP(?)
+DATAS ENDS
+
+STACKS SEGMENT
+	DW 20 DUP(?)
+    ;此处输入堆栈段代码
+STACKS ENDS
+
+CODES SEGMENT
+    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+START:
+    MOV AX,DATAS
+    MOV DS,AX
+    XOR BX,BX;		;从0开始计算
+    MOV CX,20;
+    CALL CALCULATE;
+    
+    ;此处输入代码段代码
+    XOR BX,BX
+    MOV CX,22
+    MOV K,10
+;AGAIN:
+;	PUSH CX
+ ;   CALL TRANSTOK
+  ;  CALF
+;
+ ;   ADD BX,2
+  ;  POP CX
+   ; LOOP AGAIN
+    
+    INPUTNUM
+    
+    ;
+    CALF
+    CALF
+    XOR BX,BX
+    MOV BL,INPUT
+    SHL BX,1
+    CALL TRANSTOK
+    
+    MOV AH,4CH
+    INT 21H
+;----------------------------------------------计算20以内数列
+CALCULATE PROC
+NEXT:
+	ADD BX,2
+	CMP BX,2
+	JZ ONE
+	CMP BX,4
+	JZ ONE
+	JMP OTHER
+	
+ONE:
+	MOV FIB[BX],1
+	LOOP NEXT
+OTHER:
+	MOV AX,FIB[BX-4]
+	ADD AX,FIB[BX-2]
+	MOV FIB[BX],AX
+	LOOP NEXT
+	RET
+CALCULATE ENDP
+;-----------------------------------------------转化k进制数输出
+TRANSTOK PROC
+	MOV AX,FIB[BX]
+	XOR CX,CX
+CLASSIFY:
+	XOR DX,DX	;置零
+	DIV K
+	ADD DX,30H
+	CMP DX,3AH
+	JL	PUS
+	ADD DX,7H
+PUS:
+	PUSH DX
+	INC CH
+	
+	CMP AX,0
+	JNZ CLASSIFY
+DISPLAY:
+	
+	POP DX
+	MOV AH,02H
+	INT 21H
+	DEC CH
+	JNZ DISPLAY
+	
+	RET
+TRANSTOK ENDP
+CODES ENDS
+    END START
+
+
+

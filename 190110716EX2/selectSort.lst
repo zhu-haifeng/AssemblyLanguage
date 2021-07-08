@@ -1,0 +1,101 @@
+Microsoft (R) Macro Assembler Version 6.11		    12/01/20 12:21:01
+tempfile.asm						     Page 1 - 1
+
+
+ 0000				DATAS SEGMENT
+				    ;此处输入数据段代码 
+ 0000 003C 000F 0008 001A	    NUMBER DW 60,15,8,26,3,22,36,17,80,56
+       0003 0016 0024
+       0011 0050 0038
+ 0014 000A			    COUNT DW 10
+ 0016 0A			    TEN DB 10 
+ 0017				DATAS ENDS
+
+ 0000				STACKS SEGMENT
+				    ;此处输入堆栈段代码
+ 0000  0064 [			    dw 100 dup(?)
+        0000
+       ]
+ 00C8				STACKS ENDS
+
+ 0000				CODES SEGMENT
+				    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+ 0000				START:
+ 0000  B8 ---- R		    MOV AX,DATAS
+ 0003  8E D8			    MOV DS,AX
+ 0005  B8 ---- R		    MOV AX,STACKS
+ 0008  8E D0			    MOV SS,AX
+ 000A  8B 0E 0014 R		    MOV CX,COUNT
+ 000E  2B DB			    SUB BX,BX	;存当前起始地址
+ 0010  2B FF			    SUB DI,DI	;存当前最大数地址
+ 0012  2B F6			    SUB SI,SI	;存变址
+ 0014  8D 0E 0014 R		    LEA CX,COUNT;末地止
+ 0018				OUTNEXT:
+ 0018  83 E9 02				SUB CX,2
+ 001B  3B D9				CMP BX,CX
+ 001D  74 34				JE EXIT
+ 001F  83 C1 02				ADD CX,2
+ 0022  8B F3				MOV SI,BX
+ 0024  83 C6 02				ADD SI,2
+ 0027  8B 87 0000 R			MOV AX,NUMBER[BX]
+ 002B  8B FB				MOV DI,BX
+ 002D				INNEXT:	
+ 002D  39 84 0000 R			CMP NUMBER[SI],AX
+ 0031  77 06				JA SKIP			;大于跳过
+ 0033  8B FE				MOV DI,SI
+ 0035  8B 84 0000 R			MOV AX,NUMBER[SI]
+ 0039				SKIP:
+ 0039  83 C6 02				ADD SI,2
+ 003C  3B F1				CMP SI,CX
+ 003E  7C ED				JL INNEXT
+
+
+ 0040  8B 97 0000 R			MOV DX,NUMBER[BX]
+ 0044  89 95 0000 R			MOV NUMBER[DI],DX
+ 0048  89 87 0000 R			MOV NUMBER[BX],AX
+
+ 004C  83 C3 02				ADD BX,2
+
+ 004F  3B D9				CMP BX,CX
+ 0051  7C C5				JL OUTNEXT
+					
+
+					
+ 0053				EXIT:
+				    ;此处输入代码段代码
+ 0053  B4 4C			    MOV AH,4CH
+ 0055  CD 21			    INT 21H
+ 0057				CODES ENDS
+				    END START
+
+
+Microsoft (R) Macro Assembler Version 6.11		    12/01/20 12:21:01
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODES  . . . . . . . . . . . . .	16 Bit	 0057	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 0017	  Para	  Private 
+STACKS . . . . . . . . . . . . .	16 Bit	 00C8	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+COUNT  . . . . . . . . . . . . .	Word	 0014	  DATAS	
+EXIT . . . . . . . . . . . . . .	L Near	 0053	  CODES	
+INNEXT . . . . . . . . . . . . .	L Near	 002D	  CODES	
+NUMBER . . . . . . . . . . . . .	Word	 0000	  DATAS	
+OUTNEXT  . . . . . . . . . . . .	L Near	 0018	  CODES	
+SKIP . . . . . . . . . . . . . .	L Near	 0039	  CODES	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+TEN  . . . . . . . . . . . . . .	Byte	 0016	  DATAS	
+
+	   0 Warnings
+	   0 Errors

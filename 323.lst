@@ -1,0 +1,151 @@
+Microsoft (R) Macro Assembler Version 6.11		    12/08/20 01:03:12
+tempfile.asm						     Page 1 - 1
+
+
+				CALF MACRO
+					PUSH DX
+					MOV DL,0AH
+					MOV AH,2
+					INT 21H
+					MOV DL,13
+					MOV AH,2
+					INT 21H;
+					POP DX
+				ENDM
+
+ 0000				DATAS SEGMENT
+ 0000 000F 001E 0014		    NUMBER DW 15,30,20
+ 0006 0000			    INPUT DW 0
+ 0008 10			    K DB 16
+ 0009				DATAS ENDS
+
+ 0000				STACKS SEGMENT
+ 0000  0014 [				DW 20 DUP(?)
+        0000
+       ]
+				    ;此处输入堆栈段代码
+ 0028				STACKS ENDS
+
+ 0000				CODES SEGMENT
+				    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+ 0000				START:
+ 0000  B8 ---- R		    MOV AX,DATAS
+ 0003  8E D8			    MOV DS,AX
+				    ;此处输入代码段代码
+ 0005  83 F3 00			    XOR BX,0
+ 0008  B9 0003			    MOV CX,3H
+ 000B				AGAIN:
+ 000B  51				PUSH CX
+ 000C  C6 06 0008 R 02		    MOV K,2
+ 0011  E8 003C			    CALL TRANSTOK
+				    CALF
+ 0014  52		     1		PUSH DX
+ 0015  B2 0A		     1		MOV DL,0AH
+ 0017  B4 02		     1		MOV AH,2
+ 0019  CD 21		     1		INT 21H
+ 001B  B2 0D		     1		MOV DL,13
+ 001D  B4 02		     1		MOV AH,2
+ 001F  CD 21		     1		INT 21H;
+ 0021  5A		     1		POP DX
+ 0022  C6 06 0008 R 10		    MOV K,16
+ 0027  E8 0026			    CALL TRANSTOK
+				    CALF
+ 002A  52		     1		PUSH DX
+ 002B  B2 0A		     1		MOV DL,0AH
+ 002D  B4 02		     1		MOV AH,2
+ 002F  CD 21		     1		INT 21H
+ 0031  B2 0D		     1		MOV DL,13
+ 0033  B4 02		     1		MOV AH,2
+ 0035  CD 21		     1		INT 21H;
+ 0037  5A		     1		POP DX
+				    CALF
+ 0038  52		     1		PUSH DX
+ 0039  B2 0A		     1		MOV DL,0AH
+ 003B  B4 02		     1		MOV AH,2
+ 003D  CD 21		     1		INT 21H
+ 003F  B2 0D		     1		MOV DL,13
+ 0041  B4 02		     1		MOV AH,2
+ 0043  CD 21		     1		INT 21H;
+ 0045  5A		     1		POP DX
+
+ 0046  83 C3 02			    ADD BX,2
+ 0049  59			    POP CX
+ 004A  E2 BF			    LOOP AGAIN
+				    
+ 004C  B4 4C			    MOV AH,4CH
+ 004E  CD 21			    INT 21H
+ 0050				TRANSTOK PROC
+ 0050  8B 87 0000 R			MOV AX,NUMBER[BX]
+ 0054  33 C9				XOR CX,CX
+ 0056				CLASSIFY:
+					
+ 0056  F6 36 0008 R			DIV K
+ 005A  80 C4 30				ADD AH,30H
+ 005D  80 FC 3A				CMP AH,3AH
+ 0060  7C 03				JL	PUS
+ 0062  80 C4 07				ADD AH,7H
+ 0065				PUS:
+ 0065  50				PUSH AX
+ 0066  FE C5				INC CH
+ 0068  32 E4				XOR AH,AH	;置零
+ 006A  3C 00				CMP AL,0
+ 006C  75 E8				JNZ CLASSIFY
+ 006E				DISPLAY:
+ 006E  B1 08				MOV CL,8
+ 0070  5A				POP DX
+ 0071  D3 EA				SHR DX,CL
+ 0073  B4 02				MOV AH,02H
+ 0075  CD 21				INT 21H
+ 0077  FE CD				DEC CH
+ 0079  75 F3				JNZ DISPLAY
+					
+ 007B  C3				RET
+ 007C				TRANSTOK ENDP
+ 007C				CODES ENDS
+				    END START
+
+
+Microsoft (R) Macro Assembler Version 6.11		    12/08/20 01:03:12
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+CALF . . . . . . . . . . . . . .	Proc
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODES  . . . . . . . . . . . . .	16 Bit	 007C	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 0009	  Para	  Private 
+STACKS . . . . . . . . . . . . .	16 Bit	 0028	  Para	  Private 
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+TRANSTOK . . . . . . . . . . . .	P Near	 0050	  CODES	Length= 002C Public
+  CLASSIFY . . . . . . . . . . .	L Near	 0056	  CODES	
+  PUS  . . . . . . . . . . . . .	L Near	 0065	  CODES	
+  DISPLAY  . . . . . . . . . . .	L Near	 006E	  CODES	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+AGAIN  . . . . . . . . . . . . .	L Near	 000B	  CODES	
+INPUT  . . . . . . . . . . . . .	Word	 0006	  DATAS	
+K  . . . . . . . . . . . . . . .	Byte	 0008	  DATAS	
+NUMBER . . . . . . . . . . . . .	Word	 0000	  DATAS	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+
+	   0 Warnings
+	   0 Errors

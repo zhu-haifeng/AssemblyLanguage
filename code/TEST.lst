@@ -1,0 +1,52 @@
+Microsoft (R) Macro Assembler Version 6.11		    01/07/21 13:44:44
+tempfile.asm						     Page 1 - 1
+
+
+ 0000				DATAS SEGMENT
+				    ;此处输入数据段代码  
+ 0000 02			    XX DB 2
+ 0001 0003			    YY DW 3
+ 0003				DATAS ENDS
+
+ 0000				STACKS SEGMENT
+				    ;此处输入堆栈段代码
+ 0000				STACKS ENDS
+
+ 0000				CODES SEGMENT
+				    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+ 0000				START:
+ 0000  B8 ---- R		    MOV AX,DATAS
+ 0003  8E D8			    MOV DS,AX
+				    ;此处输入代码段代码
+ 0005  B9 FFFF				MOV CX,0FFFFH
+ 0008  E2 FE			LOP:LOOP LOP
+ 000A  B4 4C			    MOV AH,4CH
+ 000C  CD 21			    INT 21H
+ 000E				CODES ENDS
+				    END START
+Microsoft (R) Macro Assembler Version 6.11		    01/07/21 13:44:44
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODES  . . . . . . . . . . . . .	16 Bit	 000E	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 0003	  Para	  Private 
+STACKS . . . . . . . . . . . . .	16 Bit	 0000	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+LOP  . . . . . . . . . . . . . .	L Near	 0008	  CODES	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+XX . . . . . . . . . . . . . . .	Byte	 0000	  DATAS	
+YY . . . . . . . . . . . . . . .	Word	 0001	  DATAS	
+
+	   0 Warnings
+	   0 Errors

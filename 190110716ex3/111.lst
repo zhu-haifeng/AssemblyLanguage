@@ -1,0 +1,153 @@
+Microsoft (R) Macro Assembler Version 6.11		    12/14/20 12:44:40
+tempfile.asm						     Page 1 - 1
+
+
+				;----------------------------------换行回车
+				CALF MACRO
+					PUSH DX
+					MOV DL,0AH
+					MOV AH,2
+					INT 21H
+					MOV DL,13
+					MOV AH,2
+					INT 21H;
+					POP DX
+				ENDM
+
+ 0000				DATAS SEGMENT
+ 0000 75 24 4D			    NUMBER DB 117,36,77
+ 0003 0000			    INPUT DW 0
+ 0005 10			    K DB 16
+ 0006				DATAS ENDS
+
+ 0000				STACKS SEGMENT
+ 0000  0014 [				DW 20 DUP(?)
+        0000
+       ]
+ 0028				STACKS ENDS
+
+ 0000				CODES SEGMENT
+				    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+ 0000				START:
+ 0000  B8 ---- R		    MOV AX,DATAS
+ 0003  8E D8			    MOV DS,AX
+ 0005  B8 ---- R		    MOV AX,STACKS
+ 0008  8E D0			    MOV SS,AX
+ 000A  83 F3 00			    XOR BX,0
+ 000D  B9 0003			    MOV CX,3H		;外部循环次数
+ 0010				AGAIN:
+ 0010  51				PUSH CX
+ 0011  C6 06 0005 R 02		    MOV K,2
+ 0016  E8 003A			    CALL TRANSTOK	;转化为2进制显示
+				    CALF			;换行回车
+ 0019  52		     1		PUSH DX
+ 001A  B2 0A		     1		MOV DL,0AH
+ 001C  B4 02		     1		MOV AH,2
+ 001E  CD 21		     1		INT 21H
+ 0020  B2 0D		     1		MOV DL,13
+ 0022  B4 02		     1		MOV AH,2
+ 0024  CD 21		     1		INT 21H;
+ 0026  5A		     1		POP DX
+ 0027  C6 06 0005 R 10		    MOV K,16
+ 002C  E8 0024			    CALL TRANSTOK	;转化16进制显示
+				    CALF
+ 002F  52		     1		PUSH DX
+ 0030  B2 0A		     1		MOV DL,0AH
+ 0032  B4 02		     1		MOV AH,2
+ 0034  CD 21		     1		INT 21H
+ 0036  B2 0D		     1		MOV DL,13
+ 0038  B4 02		     1		MOV AH,2
+ 003A  CD 21		     1		INT 21H;
+ 003C  5A		     1		POP DX
+				    CALF
+ 003D  52		     1		PUSH DX
+ 003E  B2 0A		     1		MOV DL,0AH
+ 0040  B4 02		     1		MOV AH,2
+ 0042  CD 21		     1		INT 21H
+ 0044  B2 0D		     1		MOV DL,13
+ 0046  B4 02		     1		MOV AH,2
+ 0048  CD 21		     1		INT 21H;
+ 004A  5A		     1		POP DX
+
+ 004B  43			    INC BX			;下一个数
+ 004C  59			    POP CX
+ 004D  E2 C1			    LOOP AGAIN
+				    
+ 004F  B4 4C			    MOV AH,4CH
+ 0051  CD 21			    INT 21H
+				;----------------------------------------------将NUMBER[BX]用k进制显示
+ 0053				TRANSTOK PROC
+ 0053  8A 87 0000 R			MOV AL,NUMBER[BX]
+ 0057  33 C9				XOR CX,CX
+ 0059				CLASSIFY:
+ 0059  32 E4				XOR AH,AH	;置零
+ 005B  F6 36 0005 R			DIV K
+ 005F  80 C4 30				ADD AH,30H		;转化ASCII码
+ 0062  80 FC 3A				CMP AH,3AH		;区分字母与数字
+ 0065  7C 03				JL	PUS
+ 0067  80 C4 07				ADD AH,7H
+ 006A				PUS:
+ 006A  50				PUSH AX			;压栈
+ 006B  FE C5				INC CH			;记录字符数
+					
+ 006D  3C 00				CMP AL,0		;商为零则结束
+ 006F  75 E8				JNZ CLASSIFY
+ 0071				DISPLAY:
+ 0071  B1 08				MOV CL,8
+ 0073  5A				POP DX
+ 0074  D3 EA				SHR DX,CL		;字符送DL
+ 0076  B4 02				MOV AH,02H
+ 0078  CD 21				INT 21H
+ 007A  FE CD				DEC CH
+ 007C  75 F3				JNZ DISPLAY
+					
+ 007E  C3				RET
+ 007F				TRANSTOK ENDP
+ 007F				CODES ENDS
+				    END START
+
+
+Microsoft (R) Macro Assembler Version 6.11		    12/14/20 12:44:40
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+CALF . . . . . . . . . . . . . .	Proc
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODES  . . . . . . . . . . . . .	16 Bit	 007F	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 0006	  Para	  Private 
+STACKS . . . . . . . . . . . . .	16 Bit	 0028	  Para	  Private 
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+TRANSTOK . . . . . . . . . . . .	P Near	 0053	  CODES	Length= 002C Public
+  CLASSIFY . . . . . . . . . . .	L Near	 0059	  CODES	
+  PUS  . . . . . . . . . . . . .	L Near	 006A	  CODES	
+  DISPLAY  . . . . . . . . . . .	L Near	 0071	  CODES	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+AGAIN  . . . . . . . . . . . . .	L Near	 0010	  CODES	
+INPUT  . . . . . . . . . . . . .	Word	 0003	  DATAS	
+K  . . . . . . . . . . . . . . .	Byte	 0005	  DATAS	
+NUMBER . . . . . . . . . . . . .	Byte	 0000	  DATAS	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+
+	   0 Warnings
+	   0 Errors

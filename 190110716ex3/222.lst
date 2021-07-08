@@ -1,0 +1,256 @@
+Microsoft (R) Macro Assembler Version 6.11		    12/08/20 11:16:25
+tempfile.asm						     Page 1 - 1
+
+
+				;-------------------------------------------输入一个数到INPUT
+				INPUTNUM MACRO
+					LEA DX,BUFF
+					MOV AH,0AH
+					INT 21H
+					XOR BX,BX
+					XOR CX,CX
+					XOR DX,DX
+					MOV CL,CNT
+				ADDTOSUM:
+					SHL DX,1	;原数*2
+					MOV AX,DX	;AX=原数*2
+					SHL DX,1	
+					SHL DX,1	;DX=原数*8
+					ADD DX,AX	;DX=原数*10
+					XOR AX,AX
+					MOV AL,NUMSTR[BX]
+					SUB AL,30H
+					ADD DX,AX
+					INC BX
+					LOOP ADDTOSUM
+					MOV INPUT,DL
+
+					
+				ENDM
+				;-------------------------------------------换行回车
+				CALF MACRO
+					PUSH DX
+					MOV DL,0AH
+					MOV AH,2
+					INT 21H
+					MOV DL,13
+					MOV AH,2
+					INT 21H;
+					POP DX
+				ENDM
+				;-----------------------------------------------
+ 0000				DATAS SEGMENT
+ 0000  0016 [			    FIB DW 22 DUP(?)
+        0000
+       ]
+ 002C 00			  	I DB ?
+ 002D 000A			    K DW 10
+ 002F 00			    INPUT DB ? ;
+ 0030 05			    BUFF DB 5;
+ 0031 00			    CNT DB ?;
+ 0032  0005 [			    NUMSTR DB 5 DUP(?)
+        00
+       ]
+ 0037				DATAS ENDS
+
+ 0000				STACKS SEGMENT
+ 0000  0014 [				DW 20 DUP(?)
+        0000
+       ]
+				    ;此处输入堆栈段代码
+ 0028				STACKS ENDS
+
+ 0000				CODES SEGMENT
+				    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+ 0000				START:
+ 0000  B8 ---- R		    MOV AX,DATAS
+ 0003  8E D8			    MOV DS,AX
+ 0005  33 DB			    XOR BX,BX;		;从0开始计算
+ 0007  B9 0014			    MOV CX,20;
+ 000A  E8 0083			    CALL CALCULATE;
+				    
+				    ;此处输入代码段代码
+ 000D  33 DB			    XOR BX,BX
+ 000F  B9 0016			    MOV CX,22
+ 0012  C7 06 002D R 000A	    MOV K,10
+ 0018				AGAIN:
+ 0018  51				PUSH CX
+				 ;   CALL TRANSTOK
+				  ;  CALF
+				;
+				 ;   ADD BX,2
+				  ;  POP CX
+				   ; LOOP AGAIN
+				    
+				    INPUTNUM
+ 0019  8D 16 0030 R	     1		LEA DX,BUFF
+ 001D  B4 0A		     1		MOV AH,0AH
+ 001F  CD 21		     1		INT 21H
+ 0021  33 DB		     1		XOR BX,BX
+ 0023  33 C9		     1		XOR CX,CX
+ 0025  33 D2		     1		XOR DX,DX
+ 0027  8A 0E 0031 R	     1		MOV CL,CNT
+ 002B			     1	ADDTOSUM:
+ 002B  D1 E2		     1		SHL DX,1	;原数*2
+ 002D  8B C2		     1		MOV AX,DX	;AX=原数*2
+ 002F  D1 E2		     1		SHL DX,1	
+ 0031  D1 E2		     1		SHL DX,1	;DX=原数*8
+ 0033  03 D0		     1		ADD DX,AX	;DX=原数*10
+ 0035  33 C0		     1		XOR AX,AX
+ 0037  8A 87 0032 R	     1		MOV AL,NUMSTR[BX]
+ 003B  2C 30		     1		SUB AL,30H
+ 003D  03 D0		     1		ADD DX,AX
+ 003F  43		     1		INC BX
+ 0040  E2 E9		     1		LOOP ADDTOSUM
+ 0042  88 16 002F R	     1		MOV INPUT,DL
+				    
+				    ;
+				    CALF
+ 0046  52		     1		PUSH DX
+ 0047  B2 0A		     1		MOV DL,0AH
+ 0049  B4 02		     1		MOV AH,2
+ 004B  CD 21		     1		INT 21H
+ 004D  B2 0D		     1		MOV DL,13
+ 004F  B4 02		     1		MOV AH,2
+ 0051  CD 21		     1		INT 21H;
+ 0053  5A		     1		POP DX
+				    CALF
+ 0054  52		     1		PUSH DX
+ 0055  B2 0A		     1		MOV DL,0AH
+ 0057  B4 02		     1		MOV AH,2
+ 0059  CD 21		     1		INT 21H
+ 005B  B2 0D		     1		MOV DL,13
+ 005D  B4 02		     1		MOV AH,2
+ 005F  CD 21		     1		INT 21H;
+ 0061  5A		     1		POP DX
+ 0062  33 DB			    XOR BX,BX
+ 0064  8A 1E 002F R		    MOV BL,INPUT
+ 0068  D1 E3			    SHL BX,1
+ 006A  E8 0049			    CALL TRANSTOK
+				    CALF
+ 006D  52		     1		PUSH DX
+ 006E  B2 0A		     1		MOV DL,0AH
+ 0070  B4 02		     1		MOV AH,2
+ 0072  CD 21		     1		INT 21H
+ 0074  B2 0D		     1		MOV DL,13
+ 0076  B4 02		     1		MOV AH,2
+ 0078  CD 21		     1		INT 21H;
+ 007A  5A		     1		POP DX
+				    CALF
+ 007B  52		     1		PUSH DX
+ 007C  B2 0A		     1		MOV DL,0AH
+ 007E  B4 02		     1		MOV AH,2
+ 0080  CD 21		     1		INT 21H
+ 0082  B2 0D		     1		MOV DL,13
+ 0084  B4 02		     1		MOV AH,2
+ 0086  CD 21		     1		INT 21H;
+ 0088  5A		     1		POP DX
+ 0089  59			    POP CX
+ 008A  E2 8C			    LOOP AGAIN
+ 008C  B4 4C			    MOV AH,4CH
+ 008E  CD 21			    INT 21H
+				;----------------------------------------------计算20以内数列
+ 0090				CALCULATE PROC
+ 0090				NEXT:
+ 0090  83 C3 02				ADD BX,2
+ 0093  83 FB 02				CMP BX,2
+ 0096  74 07				JZ ONE
+ 0098  83 FB 04				CMP BX,4
+ 009B  74 02				JZ ONE
+ 009D  EB 08				JMP OTHER
+					
+ 009F				ONE:
+ 009F  C7 87 0000 R 0001		MOV FIB[BX],1
+ 00A5  E2 E9				LOOP NEXT
+ 00A7				OTHER:
+ 00A7  8B 87 FFFC R			MOV AX,FIB[BX-4]
+ 00AB  03 87 FFFE R			ADD AX,FIB[BX-2]
+ 00AF  89 87 0000 R			MOV FIB[BX],AX
+ 00B3  E2 DB				LOOP NEXT
+ 00B5  C3				RET
+ 00B6				CALCULATE ENDP
+				;-----------------------------------------------转化k进制数输出
+ 00B6				TRANSTOK PROC
+ 00B6  8B 87 0000 R			MOV AX,FIB[BX]
+ 00BA  33 C9				XOR CX,CX
+ 00BC				CLASSIFY:
+ 00BC  33 D2				XOR DX,DX	;置零
+ 00BE  F7 36 002D R			DIV K
+ 00C2  83 C2 30				ADD DX,30H
+ 00C5  83 FA 3A				CMP DX,3AH
+ 00C8  7C 03				JL	PUS
+ 00CA  83 C2 07				ADD DX,7H
+ 00CD				PUS:
+ 00CD  52				PUSH DX
+ 00CE  FE C5				INC CH
+					
+ 00D0  83 F8 00				CMP AX,0
+ 00D3  75 E7				JNZ CLASSIFY
+ 00D5				DISPLAY:
+					
+ 00D5  5A				POP DX
+ 00D6  B4 02				MOV AH,02H
+ 00D8  CD 21				INT 21H
+ 00DA  FE CD				DEC CH
+ 00DC  75 F7				JNZ DISPLAY
+					
+ 00DE  C3				RET
+ 00DF				TRANSTOK ENDP
+ 00DF				CODES ENDS
+				    END START
+
+
+Microsoft (R) Macro Assembler Version 6.11		    12/08/20 11:16:25
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+CALF . . . . . . . . . . . . . .	Proc
+INPUTNUM . . . . . . . . . . . .	Proc
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODES  . . . . . . . . . . . . .	16 Bit	 00DF	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 0037	  Para	  Private 
+STACKS . . . . . . . . . . . . .	16 Bit	 0028	  Para	  Private 
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+CALCULATE  . . . . . . . . . . .	P Near	 0090	  CODES	Length= 0026 Public
+  NEXT . . . . . . . . . . . . .	L Near	 0090	  CODES	
+  ONE  . . . . . . . . . . . . .	L Near	 009F	  CODES	
+  OTHER  . . . . . . . . . . . .	L Near	 00A7	  CODES	
+TRANSTOK . . . . . . . . . . . .	P Near	 00B6	  CODES	Length= 0029 Public
+  CLASSIFY . . . . . . . . . . .	L Near	 00BC	  CODES	
+  PUS  . . . . . . . . . . . . .	L Near	 00CD	  CODES	
+  DISPLAY  . . . . . . . . . . .	L Near	 00D5	  CODES	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+ADDTOSUM . . . . . . . . . . . .	L Near	 002B	  CODES	
+AGAIN  . . . . . . . . . . . . .	L Near	 0018	  CODES	
+BUFF . . . . . . . . . . . . . .	Byte	 0030	  DATAS	
+CNT  . . . . . . . . . . . . . .	Byte	 0031	  DATAS	
+FIB  . . . . . . . . . . . . . .	Word	 0000	  DATAS	
+INPUT  . . . . . . . . . . . . .	Byte	 002F	  DATAS	
+I  . . . . . . . . . . . . . . .	Byte	 002C	  DATAS	
+K  . . . . . . . . . . . . . . .	Word	 002D	  DATAS	
+NUMSTR . . . . . . . . . . . . .	Byte	 0032	  DATAS	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+
+	   0 Warnings
+	   0 Errors

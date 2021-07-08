@@ -1,0 +1,173 @@
+Microsoft (R) Macro Assembler Version 6.11		    12/07/20 23:20:30
+tempfile.asm						     Page 1 - 1
+
+
+				CALF MACRO
+					PUSH DX
+					MOV DL,0AH
+					MOV AH,2
+					INT 21H
+					MOV DL,13
+					MOV AH,2
+					INT 21H;
+					POP DX
+				ENDM
+
+				INPUTNUM MACRO
+					LEA DX,BUFF
+					MOV AH,0AH
+					INT 21H
+					XOR BX,BX
+					XOR CX,CX
+					XOR DX,DX
+					MOV CL,CNT			;
+				ADDTOSUM:
+					SHL DX,1	;原数*2
+					MOV AX,DX	;AX=原数*2
+					SHL DX,1	;DX=原数*4
+					SHL DX,1	;DX=原数*8
+					ADD DX,AX	;DX=原数*10
+					XOR AX,AX
+					MOV AL,NUMSTR[BX]	;
+					SUB AL,30H
+					ADD DX,AX
+					INC BX
+					LOOP ADDTOSUM
+					MOV INPUT,DX		;
+					CALF
+				ENDM
+
+
+ 0000				DATAS SEGMENT
+ 0000 06			    BUFF DB 6
+ 0001 00			    CNT DB ?
+ 0002  000A [			    NUMSTR DB 10 DUP(?)
+        00
+       ]
+ 000C 0000			    INPUT DW 0
+ 000E 10			    K DB 16
+ 000F				DATAS ENDS
+
+ 0000				STACKS SEGMENT
+ 0000  0014 [				DW 20 DUP(?)
+        0000
+       ]
+				    ;此处输入堆栈段代码
+ 0028				STACKS ENDS
+
+ 0000				CODES SEGMENT
+				    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+ 0000				START:
+ 0000  B8 ---- R		    MOV AX,DATAS
+ 0003  8E D8			    MOV DS,AX
+				    ;此处输入代码段代码
+				    
+				    INPUTNUM
+ 0005  8D 16 0000 R	     1		LEA DX,BUFF
+ 0009  B4 0A		     1		MOV AH,0AH
+ 000B  CD 21		     1		INT 21H
+ 000D  33 DB		     1		XOR BX,BX
+ 000F  33 C9		     1		XOR CX,CX
+ 0011  33 D2		     1		XOR DX,DX
+ 0013  8A 0E 0001 R	     1		MOV CL,CNT			;
+ 0017			     1	ADDTOSUM:
+ 0017  D1 E2		     1		SHL DX,1	;原数*2
+ 0019  8B C2		     1		MOV AX,DX	;AX=原数*2
+ 001B  D1 E2		     1		SHL DX,1	;DX=原数*4
+ 001D  D1 E2		     1		SHL DX,1	;DX=原数*8
+ 001F  03 D0		     1		ADD DX,AX	;DX=原数*10
+ 0021  33 C0		     1		XOR AX,AX
+ 0023  8A 87 0002 R	     1		MOV AL,NUMSTR[BX]	;
+ 0027  2C 30		     1		SUB AL,30H
+ 0029  03 D0		     1		ADD DX,AX
+ 002B  43		     1		INC BX
+ 002C  E2 E9		     1		LOOP ADDTOSUM
+ 002E  89 16 000C R	     1		MOV INPUT,DX		;
+ 0032  52		     2		PUSH DX
+ 0033  B2 0A		     2		MOV DL,0AH
+ 0035  B4 02		     2		MOV AH,2
+ 0037  CD 21		     2		INT 21H
+ 0039  B2 0D		     2		MOV DL,13
+ 003B  B4 02		     2		MOV AH,2
+ 003D  CD 21		     2		INT 21H;
+ 003F  5A		     2		POP DX
+ 0040  E8 0004			    CALL TRANSTOK
+				    
+ 0043  B4 4C			    MOV AH,4CH
+ 0045  CD 21			    INT 21H
+ 0047				TRANSTOK PROC
+ 0047  A1 000C R			MOV AX,INPUT
+ 004A  33 C9				XOR CX,CX
+ 004C				CLASSIFY:
+					
+ 004C  F6 36 000E R			DIV K
+ 0050  80 C4 30				ADD AH,30H
+ 0053  80 FC 3A				CMP AH,3AH
+ 0056  7C 02				JL	PUS
+ 0058  04 07				ADD AL,7H
+ 005A				PUS:
+ 005A  50				PUSH AX
+ 005B  FE C5				INC CH
+ 005D  32 E4				XOR AH,AH	;置零
+ 005F  3C 00				CMP AL,0
+ 0061  75 E9				JNZ CLASSIFY
+ 0063				DISPLAY:
+ 0063  B1 08				MOV CL,8
+ 0065  5A				POP DX
+ 0066  D3 EA				SHR DX,CL
+ 0068  B4 02				MOV AH,02H
+ 006A  CD 21				INT 21H
+ 006C  FE CD				DEC CH
+ 006E  75 F3				JNZ DISPLAY
+					
+ 0070  C3				RET
+ 0071				TRANSTOK ENDP
+ 0071				CODES ENDS
+				    END START
+Microsoft (R) Macro Assembler Version 6.11		    12/07/20 23:20:30
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+CALF . . . . . . . . . . . . . .	Proc
+INPUTNUM . . . . . . . . . . . .	Proc
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODES  . . . . . . . . . . . . .	16 Bit	 0071	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 000F	  Para	  Private 
+STACKS . . . . . . . . . . . . .	16 Bit	 0028	  Para	  Private 
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+TRANSTOK . . . . . . . . . . . .	P Near	 0047	  CODES	Length= 002A Public
+  CLASSIFY . . . . . . . . . . .	L Near	 004C	  CODES	
+  PUS  . . . . . . . . . . . . .	L Near	 005A	  CODES	
+  DISPLAY  . . . . . . . . . . .	L Near	 0063	  CODES	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+ADDTOSUM . . . . . . . . . . . .	L Near	 0017	  CODES	
+BUFF . . . . . . . . . . . . . .	Byte	 0000	  DATAS	
+CNT  . . . . . . . . . . . . . .	Byte	 0001	  DATAS	
+INPUT  . . . . . . . . . . . . .	Word	 000C	  DATAS	
+K  . . . . . . . . . . . . . . .	Byte	 000E	  DATAS	
+NUMSTR . . . . . . . . . . . . .	Byte	 0002	  DATAS	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+
+	   0 Warnings
+	   0 Errors

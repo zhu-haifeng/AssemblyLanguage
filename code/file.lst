@@ -1,0 +1,130 @@
+Microsoft (R) Macro Assembler Version 6.11		    12/15/20 01:49:56
+tempfile.asm						     Page 1 - 1
+
+
+ 0000				DATAS SEGMENT
+ 0000 0A 00				BUFF db 10,0,10 dup(0) ;数据缓存区
+       000A [
+        00
+       ]
+ 000C  000A [				OUTREC db 10 dup(0) ;存放筛选后结果
+        00
+       ]
+ 0016 0000				TURNS dw 0 ;记录字母个数
+ 0018 6F 75 74 70 75 74			FILE_NAME db 'output1.txt',00H ;文件名
+       31 2E 74 78 74 00
+ 0024 0D 0A 45 52 52 4F			CREATE_ERR db 0DH,0AH,'ERROR:Fail to create file!','$' ;创建文件错误
+       52 3A 46 61 69 6C
+       20 74 6F 20 63 72
+       65 61 74 65 20 66
+       69 6C 65 21 24
+ 0041 0D 0A 45 52 52 4F			WRITE_ERR db 0DH,0AH,'ERROR:Fail to write file!','$' ;写文件错误
+       52 3A 46 61 69 6C
+       20 74 6F 20 77 72
+       69 74 65 20 66 69
+       6C 65 21 24
+ 005D 0D 0A 53 55 43 45			SUCC DB 0DH,0AH,'SUCEED!','$'
+       45 44 21 24
+ 0067 0000				WHANDLE dw ? ;保存文件句柄
+ 0069				DATAS ENDS
+ 0000				CODES SEGMENT
+					ASSUME CS:CODES,DS:DATAS
+ 0000				START:
+ 0000  B8 ---- R			MOV AX,DATAS
+ 0003  8E D8				MOV DS,AX
+ 0005  8D 16 0000 R			LEA DX,BUFF
+ 0009  B4 0A				MOV AH,0AH
+ 000B  CD 21				INT 21H ;调用DOS的OA指令读字符串到缓冲区中
+ 000D  33 DB				XOR BX,BX
+ 000F  33 F6				XOR SI,SI
+ 0011  8A 8F 0001 R			MOV CL,BUFF[BX+1]
+ 0015  B5 00				MOV CH,0 ;初始化索引BX,SI,将实际输入的字符数输入循环计数器CX
+ 0017				CLASSIFY:
+ 0017  8A 87 0002 R			MOV AL,BUFF[BX+2];逐个读取缓冲区中实际字符串部分的字符
+ 001B  3C 41				CMP AL,41H
+ 001D  72 17				JB NEXT
+ 001F  3C 5A				CMP AL,5AH
+ 0021  76 0A				JBE SAVE
+ 0023  3C 61				CMP AL,61H
+ 0025  72 0F				JB NEXT
+ 0027  3C 7A				CMP AL,7AH
+ 0029  76 02				JBE SAVE
+ 002B  EB 09				JMP NEXT ;通过ASCII码判断读入的字符是否为字母
+ 002D				SAVE:
+ 002D  88 84 000C R			MOV OUTREC[SI],AL ;存入是字母的字符到输出数组中
+ 0031  46				INC SI ;字母区索引增加
+ 0032  FF 06 0016 R			INC TURNS ;增加字母个数计数器
+ 0036				NEXT:
+ 0036  43				INC BX ;缓冲区索引增加，读取字符串中下一个字符
+ 0037  E2 DE				LOOP CLASSIFY ;遍历整个字符串
+ 0039  8D 16 0018 R			LEA DX,FILE_NAME
+ 003D  B4 3C				MOV AH,3CH
+ 003F  B9 0001				MOV CX,1
+ 0042  CD 21				INT 21H
+ 0044  72 27				JC ERROR_C ;调用DOS中断创建文件output1.txt，检查是否成功
+ 0046  A3 0067 R			MOV WHANDLE,AX ;将文件代号保存
+ 0049  8B 1E 0067 R			MOV BX,WHANDLE
+ 004D  8D 16 000C R			LEA DX,OUTREC
+ 0051  8B 0E 0016 R			MOV CX,TURNS ;用CX记录输出数组中需要存入的字母数量
+ 0055  B4 40				MOV AH,40H
+ 0057  CD 21				INT 21H
+ 0059  72 1C				JC ERROR_W
+					;调用DOS中断将输出区字母输到创建的文件中并检查是否成功
+ 005B  8B 1E 0067 R			MOV BX,WHANDLE
+ 005F  B4 3E				MOV AH,3EH
+ 0061  CD 21				INT 21H
+ 0063  EB 1A				JMP EXIT ;关闭文件并退出程序
+ 0065  8D 16 005D R			LEA DX,SUCC
+ 0069  B4 09				MOV AH,09H
+ 006B  CD 21				INT 21H ;错误处理：输出错误信息，转入结束程序
+ 006D				ERROR_C:
+ 006D  8D 16 0024 R			LEA DX,CREATE_ERR
+ 0071  B4 09				MOV AH,09H
+ 0073  CD 21				INT 21H
+ 0075  EB 08				JMP EXIT
+ 0077				ERROR_W:
+ 0077  8D 16 0041 R			LEA DX,WRITE_ERR
+ 007B  B4 09				MOV AH,09H
+ 007D  CD 21				INT 21H ;错误处理：输出错误信息，转入结束程序
+ 007F				EXIT:
+ 007F  B4 4C				MOV AH,4CH
+ 0081  CD 21				INT 21H
+ 0083					CODES ENDS
+				END START
+
+Microsoft (R) Macro Assembler Version 6.11		    12/15/20 01:49:56
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODES  . . . . . . . . . . . . .	16 Bit	 0083	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 0069	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+BUFF . . . . . . . . . . . . . .	Byte	 0000	  DATAS	
+CLASSIFY . . . . . . . . . . . .	L Near	 0017	  CODES	
+CREATE_ERR . . . . . . . . . . .	Byte	 0024	  DATAS	
+ERROR_C  . . . . . . . . . . . .	L Near	 006D	  CODES	
+ERROR_W  . . . . . . . . . . . .	L Near	 0077	  CODES	
+EXIT . . . . . . . . . . . . . .	L Near	 007F	  CODES	
+FILE_NAME  . . . . . . . . . . .	Byte	 0018	  DATAS	
+NEXT . . . . . . . . . . . . . .	L Near	 0036	  CODES	
+OUTREC . . . . . . . . . . . . .	Byte	 000C	  DATAS	
+SAVE . . . . . . . . . . . . . .	L Near	 002D	  CODES	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+SUCC . . . . . . . . . . . . . .	Byte	 005D	  DATAS	
+TURNS  . . . . . . . . . . . . .	Word	 0016	  DATAS	
+WHANDLE  . . . . . . . . . . . .	Word	 0067	  DATAS	
+WRITE_ERR  . . . . . . . . . . .	Byte	 0041	  DATAS	
+
+	   0 Warnings
+	   0 Errors
